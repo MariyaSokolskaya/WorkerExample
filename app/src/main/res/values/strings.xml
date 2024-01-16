@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">WorkerExample</string>
+    <string name="title_text">Скачиваем картинки</string>
+    <string name="button_text">Загрузить рисунки</string>
+</resources>
