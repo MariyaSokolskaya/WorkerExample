@@ -2,13 +2,18 @@ package com.example.workerexample;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.lifecycle.Observer;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TableRow;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,6 +46,22 @@ public class MainActivity extends AppCompatActivity {
                 //менеджер потока
                 WorkManager workManager = WorkManager.getInstance();
                 workManager.enqueue(workRequest);
+                workManager.getWorkInfoByIdLiveData(workRequest.getId())
+                        .observe(MainActivity.this, new Observer<WorkInfo>() {
+                            @Override
+                            public void onChanged(WorkInfo workInfo) {
+                                String imageJson = workInfo.getOutputData().getString("image");
+                                if(imageJson != null) {
+                                    Bitmap image = ImageHelper.jsonToImage(imageJson);
+                                    ((ImageView) imagesRow.getChildAt(0)).setImageBitmap(image);
+                                }else{
+                                    String error = workInfo.getOutputData().getString("ioexception");
+                                    Toast.makeText(getApplicationContext(), "Ошибка " + error,
+                                            Toast.LENGTH_LONG).show();
+                                }
+                            }
+
+                        });
             }
         });
     }

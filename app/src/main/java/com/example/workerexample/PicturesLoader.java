@@ -3,8 +3,10 @@ package com.example.workerexample;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -16,6 +18,7 @@ public class PicturesLoader extends Worker {
 
     Bitmap image;
     URL url;
+    Data outputData;
     public PicturesLoader(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
@@ -28,12 +31,15 @@ public class PicturesLoader extends Worker {
             url = new URL(getInputData().getString("address"));
             //открытие потока и скачивание картинки
             image = BitmapFactory.decodeStream(url.openStream());
-
+            String jsonImage = ImageHelper.imageToJson(image);
+            outputData = new Data.Builder().putString("image", jsonImage).build();
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            Toast.makeText(getApplicationContext(), "Адрес неправильный", Toast.LENGTH_LONG)
+                    .show();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            outputData = new Data.Builder().putString("ioexception", "Ошибка соединения").build();
+            return Result.failure(outputData);
         }
-        return null;
+        return Result.success(outputData);
     }
 }
